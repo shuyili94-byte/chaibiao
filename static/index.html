@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="api-token" content="__API_TOKEN__">
+  <meta name="description" content="拆表：搜索A股公司，选择真实可用报告期，阅读原始三表与可复核的财务解读。">
+  <title>拆表 · 财报解读工作台</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <nav class="nav"><div class="nav-inner"><a class="brand" href="/" aria-label="拆表首页"><span class="brand-icon">拆</span><strong>拆表</strong></a><span class="nav-divider"></span><span class="nav-title">报告工作台</span><span class="nav-note">FINANCIAL CLARITY</span></div></nav>
+  <div class="prototype-bar"><span class="status-dot"></span><strong>本地程序</strong><span>公开数据查询 / 高级导入</span><span class="prototype-pay">未接真实收款</span></div>
+  <main class="workspace">
+    <header class="hero">
+      <div><p class="eyebrow">从一家公司开始，读懂三张财报</p><h1>找到公司，<br>看清每一期财报。</h1><p class="hero-copy">按实际可用期间查看原始三表，再用公式拆解指标。<br>利润与现金分开说，来源与口径一起看。</p></div>
+      <div class="hero-flow" aria-label="工作流程"><span><b>01</b> 搜索并选择公司</span><i>→</i><span><b>02</b> 选择可用报告期</span><i>→</i><span><b>03</b> 阅读三表与解读</span></div>
+    </header>
+
+    <div class="work-grid">
+      <aside class="input-column">
+        <section class="panel data-panel" aria-labelledby="input-title">
+          <div class="panel-heading"><span class="step-number">01</span><h2 id="input-title">查找上市公司</h2></div>
+          <p class="muted">支持沪、深、北 A 股。输入股票代码或公司名称。</p>
+          <form id="search-form" class="search-form"><label class="field-label" for="company-query">股票代码 / 公司名称</label><div class="search-row"><input id="company-query" type="search" maxlength="80" autocomplete="off" placeholder="如 600519 或 贵州茅台"><button id="search-button" class="button primary" type="submit">搜索</button></div></form>
+          <p class="helper" id="search-status" aria-live="polite">搜索后请选择准确的公司。</p>
+          <div id="company-results" class="company-results" aria-label="公司搜索结果"></div>
+          <div id="selected-company" class="selected-company" hidden></div>
+          <button type="button" class="text-button" id="clear-company" hidden>更换公司</button>
+
+          <div class="period-picker" id="period-picker" hidden>
+            <div class="panel-heading period-heading"><span class="step-number">02</span><h2>选择报告期</h2></div>
+            <p id="coverage-note" class="helper"></p>
+            <div class="filter-row"><div><label class="field-label" for="year-filter">报告年度</label><select id="year-filter" disabled><option value="all">请先选择公司</option></select></div><div><label class="field-label" for="type-filter">报告类型</label><select id="type-filter" disabled><option value="all">全部类型</option></select></div></div>
+            <label class="field-label" for="period-select">真实可用报告期</label><select id="period-select" disabled><option value="">尚未载入</option></select>
+            <p id="period-note" class="helper"></p>
+            <p class="cumulative-note">利润表、现金流量表为年初至报告期末累计；一季报、半年报、三季报均非单季数据。</p>
+            <button type="button" class="button primary full" id="load-report" disabled>读取三表并生成解读 <span aria-hidden="true">→</span></button>
+            <button type="button" class="text-button" id="retry-periods" hidden>重新获取可用报告期</button>
+          </div>
+          <p id="market-error" class="market-error" role="alert" hidden></p>
+          <p class="helper market-disclaimer">仅列出数据源实际返回的报告期间，不保证每家公司上市以来的历史完整性。异常或缺项请以公司正式披露为准。</p>
+        </section>
+
+        <details class="panel advanced-panel" id="advanced-import">
+          <summary><span>高级导入与示例</span><span class="pill gray">可选</span></summary>
+          <div class="advanced-body">
+          <p class="muted">用于导入自己的财务数据或离线体验；手工数据不会被联网核验。</p>
+          <div class="import-actions"><label class="button subtle file-label" for="file-input">选择 JSON 文件</label><button class="text-button" type="button" id="template-button">下载模板 ↓</button></div>
+          <input class="visually-hidden" id="file-input" type="file" accept=".json,application/json">
+          <label class="field-label" for="payload-input">财报 JSON</label>
+          <textarea id="payload-input" rows="10" spellcheck="false" placeholder="粘贴完整 JSON，或通过上方载入示例。&#10;支持的数据字段和口径请查看模板。"></textarea>
+          <div class="input-caption"><span>仅 JSON · 最大 128 KB</span><span id="input-size">0 B</span></div>
+          <button class="button dark full" type="button" id="analyze-button">解读导入数据 <span aria-hidden="true">→</span></button>
+          <div class="separator"><span>离线试用</span></div>
+          <button class="button subtle full" id="demo-button" type="button">载入虚构示例并生成报告</button>
+          <p class="helper">示例为人工构造，不对应任何上市公司。</p>
+          </div>
+        </details>
+
+        <details class="panel order-panel" id="order-panel">
+          <summary><span>本地订单联调</span><span class="pill amber">模拟</span></summary>
+          <div class="order-body"><p class="muted">演示一次“下单 → 模拟支付 → 报告交付”。全程不产生真实扣款。</p><div class="price"><strong>¥3.00</strong><span>/ 份 · 演示价格</span></div><p class="helper">订单绑定创建时的输入数据；之后编辑输入不会修改已创建订单。</p><div class="order-actions"><button class="button subtle full" id="order-create" type="button">1. 创建模拟订单</button><button class="button subtle full" id="order-pay" type="button" disabled>2. 确认模拟支付（无扣款）</button><button class="button subtle full" id="order-deliver" type="button" disabled>3. 获取交付报告</button></div><p class="order-status" id="order-status" aria-live="polite">尚未创建订单</p></div>
+        </details>
+        <div class="boundary-note"><b>使用边界</b><p>这是财报学习与信息整理工具。核对差异是调查线索；本工具不提供估值、证券评级、买卖建议或收益承诺。</p></div>
+      </aside>
+
+      <section class="output-column" aria-label="财报报告">
+        <div class="report-toolbar"><div><span class="step-number">02</span><h2>解读与复核</h2></div><div class="toolbar-actions"><button class="text-button" type="button" id="download-button" disabled>导出 JSON ↓</button><button class="text-button" type="button" id="print-button" disabled>打印 / 保存 PDF</button></div></div>
+        <p class="feedback" id="feedback" role="status" aria-live="polite">先查找公司，再选择你想阅读的报告期。</p>
+        <p class="error-message" id="error-message" role="alert" hidden></p>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-visual" aria-hidden="true"><div class="paper back-paper"><span></span><i></i><i></i><i></i></div><div class="paper front-paper"><b>三表解读</b><span></span><div class="mini-bars"><i></i><i></i><i></i><i></i></div><em>数据 → 公式 → 说明</em></div><div class="proof-mark">✓</div></div>
+          <p class="eyebrow">把每一家公司，看得更清楚</p><h3>先看原始三表，再读财务解读。</h3><p>选择公司与报告期后，查看完整源字段、<br>核心指标、计算公式和需要复核的线索。</p><div class="empty-tags"><span>公开三表</span><span>可用期间</span><span>计算与核对</span></div>
+        </div>
+        <article id="raw-report" class="report raw-report" hidden></article>
+        <p id="analysis-state" class="analysis-state" role="status" aria-live="polite" hidden></p>
+        <article id="report" class="report" hidden></article>
+      </section>
+    </div>
+    <footer class="footer"><strong>拆表</strong><span>让每次财报解读有据可查。</span><span>公开数据仅供核对 · 非投资建议</span></footer>
+  </main>
+</body>
+</html>

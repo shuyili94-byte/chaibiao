@@ -1,0 +1,23 @@
+{
+  "company": "请填写公司全称",
+  "code": "请填写股票代码或内部标识",
+  "period": "2025",
+  "scope": "consolidated",
+  "industry": "general",
+  "unit": "CNY_million",
+  "source": {"kind": "manual", "document": "请填写年度报告标题", "url": "", "page": "请填写页码或附注编号"},
+  "statements": {
+    "revenue": null, "cost": null, "net_profit": null, "net_profit_parent": null,
+    "assets_begin": null, "assets_end": null, "liabilities_end": null,
+    "equity_begin": null, "equity_end": null,
+    "parent_equity_begin": null, "parent_equity_end": null,
+    "cfo": null, "cfi": null, "cff": null, "fx_effect": null,
+    "cash_begin": null, "cash_end": null, "capex_cash_outflow": null,
+    "revenue_previous": null, "receivables_begin": null, "receivables_end": null,
+    "depreciation_amortization": null, "inventory_begin": null, "inventory_end": null,
+    "retained_begin": null, "retained_end": null,
+    "dividends_declared": null, "reserves_transfer": null, "retained_other_adjustments": null,
+    "impairment": null, "finance_nonoperating_adjustments": null,
+    "deferred_tax_adjustments": null, "working_capital_adjustments": null, "other_noncash_adjustments": null
+  }
+}

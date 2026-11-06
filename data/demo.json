@@ -1,0 +1,23 @@
+{
+  "company": "虚构演示公司 A（全部数据为演示构造）",
+  "code": "DEMO",
+  "period": "2025",
+  "scope": "consolidated",
+  "industry": "general",
+  "unit": "CNY_million",
+  "source": {"kind": "demo", "document": "虚构演示数据；未连接任何上市公司数据源", "url": "", "page": "不适用"},
+  "statements": {
+    "revenue": "12346", "cost": "4640", "net_profit": "2983", "net_profit_parent": "2905",
+    "assets_begin": "27800", "assets_end": "29500", "liabilities_end": "13100",
+    "equity_begin": "15100", "equity_end": "16400",
+    "parent_equity_begin": "14500", "parent_equity_end": "15700",
+    "cfo": "3400", "cfi": "-1100", "cff": "-2005", "fx_effect": "0",
+    "cash_begin": "3200", "cash_end": "3495", "capex_cash_outflow": "420",
+    "revenue_previous": "11223.636364", "receivables_begin": "356", "receivables_end": "520",
+    "depreciation_amortization": "312", "inventory_begin": "4800", "inventory_end": "5100",
+    "retained_begin": "9000", "retained_end": "11100",
+    "dividends_declared": null, "reserves_transfer": null, "retained_other_adjustments": null,
+    "impairment": null, "finance_nonoperating_adjustments": null,
+    "deferred_tax_adjustments": null, "working_capital_adjustments": null, "other_noncash_adjustments": null
+  }
+}

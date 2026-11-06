@@ -1,0 +1,787 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "拆表MVP年度及中期累计合并报表输入",
+  "description": "普通非金融企业、同一合并范围、人民币百万元。支持年度及标准季末报告日，利润及现金流全部采用本年初至报告日累计口径，不冒称单季度、不机械年化。期初资产及权益均取上年12月31日。source记录来源声明，计算内核不提供鉴证。cash_begin/cash_end必须为现金及现金等价物。capex_cash_outflow为正数现金支出。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "company",
+    "period",
+    "scope",
+    "unit",
+    "source",
+    "statements"
+  ],
+  "properties": {
+    "company": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "code": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "period": {
+      "type": "string",
+      "pattern": "^(19|20)[0-9]{2}(-(03-31|06-30|09-30|12-31))?$",
+      "description": "年度YYYY（兼容原输入），或YYYY-03-31一季报、YYYY-06-30半年报、YYYY-09-30三季报、YYYY-12-31年报。利润及现金流均为1月1日至该报告日累计；选择已有披露期间由数据提供层负责。"
+    },
+    "scope": {
+      "const": "consolidated"
+    },
+    "industry": {
+      "const": "general",
+      "default": "general",
+      "description": "普通非金融企业"
+    },
+    "unit": {
+      "const": "CNY_million",
+      "description": "人民币百万元；亿元×100，万元÷100"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "document"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "demo",
+            "manual",
+            "public_provider"
+          ],
+          "description": "demo=虚构演示；manual=用户录入；public_provider=公开数据服务商，原始披露及数据真实性未经计算内核鉴证"
+        },
+        "document": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "空字符串或HTTP(S)链接；程序不会访问该链接"
+        },
+        "page": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "页码或附注编号，可空"
+        },
+        "provider": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "可选，公开数据服务商名称"
+        },
+        "fetched_at": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "可选，数据获取时间文本，建议ISO8601含时区，如2026-10-22T12:00:00Z"
+        }
+      }
+    },
+    "statements": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revenue": {
+          "title": "营业收入",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cost": {
+          "title": "营业成本",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "net_profit": {
+          "title": "合并净利润",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "net_profit_parent": {
+          "title": "归属于母公司股东的净利润",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets_begin": {
+          "title": "本年初资产总额（上年12月31日）",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assets_end": {
+          "title": "期末资产总额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "liabilities_end": {
+          "title": "期末负债总额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "equity_begin": {
+          "title": "本年初所有者权益合计（上年12月31日）",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "equity_end": {
+          "title": "期末所有者权益合计",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parent_equity_begin": {
+          "title": "本年初归属于母公司股东的权益（上年12月31日）",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parent_equity_end": {
+          "title": "期末归属于母公司股东的权益",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cfo": {
+          "title": "经营活动现金流量净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cfi": {
+          "title": "投资活动现金流量净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cff": {
+          "title": "筹资活动现金流量净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fx_effect": {
+          "title": "汇率变动对现金及现金等价物的影响额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cash_begin": {
+          "title": "本年初现金及现金等价物余额",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cash_end": {
+          "title": "期末现金及现金等价物余额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capex_cash_outflow": {
+          "title": "购建固定资产、无形资产和其他长期资产支付的现金（正数）",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revenue_previous": {
+          "title": "上年同期累计营业收入",
+          "description": "上年1月1日至上年同一报告日的累计营业收入，人民币百万元；中期不能填上年全年收入。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivables_begin": {
+          "title": "本年初应收账款账面价值",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivables_end": {
+          "title": "期末应收账款账面价值",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inventory_begin": {
+          "title": "本年初存货账面价值",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inventory_end": {
+          "title": "期末存货账面价值",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depreciation_amortization": {
+          "title": "现金流附注折旧摊销调节额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retained_begin": {
+          "title": "本年初归母未分配利润（按同口径重述）",
+          "description": "本年初即上年12月31日同口径余额，人民币百万元；不是上季度末余额。缺失请留null，不补0。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retained_end": {
+          "title": "期末归母未分配利润",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dividends_declared": {
+          "title": "本期减少未分配利润的分红（非现金支付额）",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reserves_transfer": {
+          "title": "本期提取盈余公积等减少未分配利润的金额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retained_other_adjustments": {
+          "title": "其他直接计入归母未分配利润的调节净额（增正减负）",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "impairment": {
+          "title": "现金流附注减值损失调节额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finance_nonoperating_adjustments": {
+          "title": "现金流附注财务及投资等非经营损益调节净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deferred_tax_adjustments": {
+          "title": "现金流附注递延所得税调节净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "working_capital_adjustments": {
+          "title": "现金流附注存货及经营性应收应付等营运资金调节净额",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "other_noncash_adjustments": {
+          "title": "现金流附注其余非现金及其他调节净额（与上述项目不重复）",
+          "description": "人民币百万元；缺失请留null，明确为零才填0。运行时最多支持12位小数、绝对值不超过1e18。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": -1e+18,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivables_previous": {
+          "title": "上年同一报告日应收账款账面价值",
+          "description": "上年同一报告日应收账款账面价值，人民币百万元。供同比使用；中期缺此项时不计算应收同比，不以年初余额冒充。",
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1e+18
+            },
+            {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "x-runtime-validation": [
+    "拒绝布尔值、NaN、Infinity及无穷大数值",
+    "数值绝对值不超过1e18，小数位不超过12位",
+    "非负项目的数字字符串也须非负",
+    "source.url若非空须为HTTP(S)地址",
+    "文本不得为纯空白（允许为空的字段除外）"
+  ],
+  "x-output": {
+    "metrics": "[{key,label,value:number|null,unit:%|times|CNY_million,formula,inputs,explanation,status:computed|insufficient}]",
+    "checks": "[{key,label,status:pass|review|insufficient,expected:number|null,actual:number|null,difference:number|null,unit,explanation}]",
+    "other": "meta（含period_label、income_basis:year_to_date、period_start、period_end、is_annual）,sections:[{title,paragraphs:[string],rows?:[{label,value:number|null,unit}]}],warnings:[string],source,disclaimer"
+  },
+  "x-checks": [
+    "balance_equation",
+    "cash_reconciliation",
+    "dupont",
+    "retained_earnings",
+    "profit_cash_bridge"
+  ],
+  "x-important": [
+    "ROE为双期简单平均，非监管披露加权平均ROE",
+    "总口径杜邦为代数自检，非财报真实性鉴证",
+    "缺数据不补0；零/负分母不生成误导比率",
+    "全部结果使用Decimal计算，展示输出数字最多6位小数",
+    "金额核对绝对容差0.000001百万元（人民币1元），数据已四舍五入可能触发需复核",
+    "中期ROE与周转率为本期累计指标，未年化；不得跨期间长度直接比较",
+    "revenue_previous为上年同期累计收入；receivables_previous为上年同一报告日余额",
+    "receivables_begin为本年初余额；较年初变化与同比明确区分，年度缺同比基数时可兼容使用年初即上年末余额",
+    "利润和现金流必须同期，均采用本年1月1日至报告日累计数"
+  ]
+}

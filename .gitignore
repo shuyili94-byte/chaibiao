@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+var/
+*.sqlite*
+*.db
+*.db-wal
+*.db-shm
+.test-work/
+outputs/
+*-report.json
+report.json
+.idea/
+.vscode/
+.DS_Store
